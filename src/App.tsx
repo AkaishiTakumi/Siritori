@@ -5,7 +5,7 @@ function App() {
 	return (
 		<>
 			<StartResetButton />
-			<NewText />
+			<LastText />
 		</>
 	);
 }
@@ -26,7 +26,23 @@ function StartResetButton() {
 	);
 }
 
-function NewText() {
+function LastText() {
+	const [lastText, setLastText] = useState("最初の単語は、しりとりです");
+
+	// 前回の入力をStateにセット
+	const handleLastText = (text: string) => {
+		setLastText(`前回の単語は、${text}です！`);
+	};
+
+	return (
+		<div className="last-text">
+			{lastText}
+			<NewText updateText={handleLastText} />
+		</div>
+	);
+}
+
+function NewText({ updateText }: { updateText: (text: string) => void }) {
 	const [text, setText] = useState("");
 
 	// テキストボックスが変更されたら、State更新
@@ -37,6 +53,7 @@ function NewText() {
 	// ボタン押下でStateをコンソールに出力
 	const submit = () => {
 		console.log(`入力値は、${text}です！`);
+		updateText(text); // 親コンポーネントの関数を呼び出す
 		setText(""); // 入力後、テキストボックスを空にする
 	};
 	// Enterキー押下でStateをコンソールに出力

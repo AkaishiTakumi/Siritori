@@ -37,6 +37,7 @@ function NewText() {
 	// ボタン押下でStateをコンソールに出力
 	const submit = () => {
 		console.log(`入力値は、${text}です！`);
+		setText(""); // 入力後、テキストボックスを空にする
 	};
 	// Enterキー押下でStateをコンソールに出力
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

@@ -5,7 +5,7 @@ function App() {
 	return (
 		<>
 			<StartResetButton />
-			<LastText />
+			<NewText />
 		</>
 	);
 }
@@ -26,7 +26,7 @@ function StartResetButton() {
 	);
 }
 
-function LastText() {
+function NewText() {
 	const [text, setText] = useState("");
 
 	// テキストボックスが変更されたら、State更新
@@ -38,16 +38,22 @@ function LastText() {
 	const submit = () => {
 		console.log(`入力値は、${text}です！`);
 	};
+	// Enterキー押下でStateをコンソールに出力
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.nativeEvent.isComposing || e.key !== "Enter") return;
+		submit();
+	};
 
 	return (
 		<>
 			<input
-				className="last-text"
+				className="new-text"
 				type="text"
 				value={text}
 				onChange={handleTextBox}
+				onKeyDown={handleKeyDown}
 			/>
-			<button className="last-text-button" onClick={submit}>
+			<button className="new-text-button" onClick={submit}>
 				決定
 			</button>
 		</>

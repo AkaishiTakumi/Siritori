@@ -1,0 +1,11 @@
+.start-reset-button {
+    position: absolute;/* absoluteとは 親要素を基準にして配置すること */
+    left: 100px; 
+    top: 100px;
+    user-select: none; /* ユーザーが選択できないようにする */
+    background-color: rgb(223, 56, 38); /* 背景色 */
+    color: rgb(255, 255, 255); /* 文字色 */
+    padding: 0.8rem; /* 内側の余白 */
+    border-radius: 0.4rem; /* 角の丸み */
+    cursor: pointer; /* カーソルをポインタに */
+}

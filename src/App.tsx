@@ -1,11 +1,28 @@
-import React from 'react'
+import "./App.css";
+import { useState } from "react";
 
-const App: React.FC = () => {
-  return (
-    <div>
-      <h1>しりとりアプリへようこそ！</h1>
-    </div>
-  )
+function App() {
+	return (
+		<>
+			<StartResetButton />
+		</>
+	);
 }
 
-export default App
+// スタートボタン
+function StartResetButton() {
+	const [isStart, setIsStart] = useState(false);
+
+	// スタートボタンをクリックしたとき、isStartをtrueにする
+	const startClick = () => {
+		setIsStart(true);
+	};
+
+	return (
+		<span className="start-reset-button" onClick={startClick}>
+			{isStart ? "リセット" : "スタート"}
+		</span>
+	);
+}
+
+export default App;

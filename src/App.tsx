@@ -2,39 +2,67 @@ import "./App.css";
 import { useState } from "react";
 
 function App() {
+	const [isStart, setIsStart] = useState(false);
+	const [lastText, setLastText] = useState("しりとり");
 	return (
 		<>
-			<StartResetButton />
-			<TextUpdate />
+			<StartResetButton
+				isStart={isStart}
+				setIsStart={setIsStart}
+				setLastText={setLastText}
+			/>
+			{isStart && (
+				<TextUpdate lastText={lastText} setLastText={setLastText} />
+			)}
 		</>
 	);
 }
 
 // スタートボタン
-function StartResetButton() {
-	const [isStart, setIsStart] = useState(false);
-
+function StartResetButton({
+	isStart,
+	setIsStart,
+	setLastText,
+}: {
+	isStart: boolean;
+	setIsStart: (isStart: boolean) => void;
+	setLastText: (lastText: string) => void;
+}) {
 	// スタートボタンをクリックしたとき、isStartをtrueにする
 	const startClick = () => {
 		setIsStart(true);
+		setLastText("しりとり"); // スタート時に初期単語をセット
 	};
 
 	return (
-		<span className="start-reset-button" onClick={startClick}>
+		<div className="start-reset-button" onClick={startClick}>
 			{isStart ? "リセット" : "スタート"}
-		</span>
+		</div>
 	);
 }
 
-function TextUpdate() {
-	const [lastText, setLastText] = useState("しりとり");
+function TextUpdate({
+	lastText,
+	setLastText,
+}: {
+	lastText: string;
+	setLastText: (lastText: string) => void;
+}) {
 	const [siritoriError, setSiritoriError] = useState(false);
-	
+
 	return (
 		<>
 			<div className="last-text">ひとつ前の単語は{lastText}です</div>
-			<NewText lastText={lastText} setLastText={setLastText}  setSiritoriError={setSiritoriError} />
-			{siritoriError && <div className="siritori-error">ひとつ前の単語の末尾と入力した単語の先頭が一致しません</div>}
+			<NewText
+				lastText={lastText}
+				setLastText={setLastText}
+				setSiritoriError={setSiritoriError}
+			/>
+			{siritoriError && (
+				<div className="siritori-error">
+					ひとつ前の単語の末尾と入力した単語の先頭が一致しません
+				</div>
+			)}
 		</>
 	);
 }
@@ -62,8 +90,7 @@ function NewText({
 			// 前回の入力をStateにセット
 			setLastText(newText);
 			setSiritoriError(false); // 一致したらエラーを削除
-		}
-		else setSiritoriError(true); // 一致しなかった場合はエラーをtrueにする
+		} else setSiritoriError(true); // 一致しなかった場合はエラーをtrueにする
 		setNewText(""); // 入力後、テキストボックスを空にする
 	};
 	// Enterキー押下でStateをコンソールに出力

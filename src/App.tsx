@@ -1,9 +1,14 @@
 import "./App.css";
+import "./AVLtree.ts";
 import { useState } from "react";
 
 function App() {
+	// スタートボタンの状態
 	const [isStart, setIsStart] = useState(false);
+
+	// しりとりの直前の単語
 	const [lastText, setLastText] = useState("しりとり");
+
 	return (
 		<>
 			<StartResetButton
@@ -41,6 +46,7 @@ function StartResetButton({
 	);
 }
 
+// しりとり 単語の更新
 function TextUpdate({
 	lastText,
 	setLastText,
@@ -67,6 +73,7 @@ function TextUpdate({
 	);
 }
 
+// 単語の更新
 function NewText({
 	lastText,
 	setLastText,

@@ -1,15 +1,23 @@
 import "./App.css";
 import { useState } from "react";
 
+let flagI = 1;
+const isStart: number = flagI;
+flagI = flagI << 1;
+const nError: number = flagI;
+flagI = flagI << 1;
+const alreadyError: number = flagI;
+flagI = flagI << 1;
+const siritoriError: number = flagI;
+flagI = flagI << 1;
+const hiraganaError: number = flagI;
+flagI = flagI << 1;
+const oneError: number = flagI;
+flagI = flagI << 1;
+
 function App() {
-	// スタートボタンの状態
-	const [isStart, setIsStart] = useState(false);
-
-	// 入力した単語の末尾が'ん'のとき、true
-	const [nError, setNError] = useState(false);
-
-	// 過去に使用した単語が入力されたら、ゲームを終了
-	const [alreadyError, setAlreadyError] = useState(false);
+	// エラーフラグ
+	const [errorFlag, setErrorFlag] = useState(flagI & ~flagI);
 
 	// しりとりの直前の単語
 	const [lastText, setLastText] = useState("しりとり");
@@ -20,21 +28,15 @@ function App() {
 	return (
 		<>
 			<StartResetButton
-				isStart={isStart}
-				setIsStart={setIsStart}
+				errorFlag={errorFlag}
+				setErrorFlag={setErrorFlag}
 				setLastText={setLastText}
-				setNError={setNError}
-				setAlreadyError={setAlreadyError}
 				vocabBook={vocabBook}
 				setVocabBook={setVocabBook}
 			/>
 			<TextUpdate
-				isStart={isStart}
-				setIsStart={setIsStart}
-				nError={nError}
-				setNError={setNError}
-				alreadyError={alreadyError}
-				setAlreadyError={setAlreadyError}
+				errorFlag={errorFlag}
+				setErrorFlag={setErrorFlag}
 				lastText={lastText}
 				setLastText={setLastText}
 				vocabBook={vocabBook}
@@ -46,117 +48,123 @@ function App() {
 
 // スタートボタン
 function StartResetButton({
-	isStart,
-	setIsStart,
-	setNError,
-	setAlreadyError,
+	errorFlag,
+	setErrorFlag,
 	setLastText,
 	vocabBook,
 	setVocabBook,
 }: {
-	isStart: boolean;
-	setIsStart: (isStart: boolean) => void;
-	setNError: (nError: boolean) => void;
-	setAlreadyError: (nError: boolean) => void;
+	errorFlag: number;
+	setErrorFlag: (errorFlag: number) => void;
 	setLastText: (lastText: string) => void;
 	vocabBook: string[];
 	setVocabBook: (vocabBook: string[]) => void;
 }) {
-	// スタートボタンをクリックしたとき、isStartをtrueにする
+	// スタートボタンをクリックしたとき、フラグをisStartにする
 	const startClick = () => {
-		setIsStart(true);
-		setNError(false);
-		setAlreadyError(false);
-		setLastText("しりとり"); // スタート時に初期単語をセット
+		setErrorFlag(isStart);
+		setLastText("しりとり"); // 初期単語をセット
 		setVocabBook(["しりとり"]);
-		console.debug(`start: ${vocabBook}`);
 	};
 
 	return (
 		<div className="start-reset-button" onClick={startClick}>
-			{isStart ? "リセット" : "スタート"}
+			{errorFlag & isStart ? "リセット" : "スタート"}
 		</div>
 	);
 }
 
 // しりとり 単語の更新
 function TextUpdate({
-	isStart,
-	setIsStart,
-	nError,
-	setNError,
-	alreadyError,
-	setAlreadyError,
+	errorFlag,
+	setErrorFlag,
 	lastText,
 	setLastText,
 	vocabBook,
 	setVocabBook,
 }: {
-	isStart: boolean;
-	setIsStart: (isStart: boolean) => void;
-	nError: boolean;
-	setNError: (nError: boolean) => void;
-	alreadyError: boolean;
-	setAlreadyError: (nError: boolean) => void;
+	errorFlag: number;
+	setErrorFlag: (errorFlag: number) => void;
 	lastText: string;
 	setLastText: (lastText: string) => void;
 	vocabBook: string[];
 	setVocabBook: (vocabBook: string[]) => void;
 }) {
-	// 前回の単語の末尾と入力した単語の先頭が一致しないとき、true 一致するとき、false
-	const [siritoriError, setSiritoriError] = useState(false);
-
 	return (
 		<>
-			{(isStart || nError || alreadyError) && (
+			{/* 一度もスタートを押していなければ、errorFlagは0 */}
+			{Boolean(errorFlag) && (
 				<div className="last-text">ひとつ前の単語は{lastText}です</div>
 			)}
-			{isStart && (
+			{Boolean(errorFlag & isStart) && (
 				<NewText
-					setIsStart={setIsStart}
-					setSiritoriError={setSiritoriError}
-					setNError={setNError}
-					setAlreadyError={setAlreadyError}
+					errorFlag={errorFlag}
+					setErrorFlag={setErrorFlag}
 					lastText={lastText}
 					setLastText={setLastText}
 					vocabBook={vocabBook}
 					setVocabBook={setVocabBook}
 				/>
 			)}
-			{siritoriError && (
+			{Boolean(errorFlag & siritoriError) && (
 				<div className="siritori-error">
 					ひとつ前の単語の末尾と入力した単語の先頭が一致しません
 				</div>
 			)}
-			{nError && (
+			{Boolean(errorFlag & hiraganaError) && (
+				<div className="hiragana-error">
+					ひらがな以外が入力されました
+				</div>
+			)}
+			{Boolean(errorFlag & oneError) && (
+				<div className="one-error">
+					入力が一文字だけでした 文字数を増やしてください
+				</div>
+			)}
+			{Boolean(errorFlag & nError) && (
 				<div className="n-error">
 					入力した単語の末尾が'ん'でした ゲームを終了します
 				</div>
 			)}
-			{alreadyError && (
-				<div className="n-error">
+			{Boolean(errorFlag & alreadyError) && (
+				<div className="already-error">
 					過去に使用した単語が入力されました ゲームを終了します
 				</div>
 			)}
+			<div className="debug">
+				<div className="debug-text">Debug</div>
+				<div>errorFlag: {errorFlag}</div>
+				<div>errorFlag.toString(2): {errorFlag.toString(2)}</div>
+				<div>isStart: {isStart}</div>
+				<div>errorFlag & isStart: {errorFlag & isStart}</div>
+				<div>
+					Boolean(errorFlag & isStart):{" "}
+					{Boolean(errorFlag & isStart) ? "true" : "false"}
+				</div>
+				<div>siritoriError: {siritoriError}</div>
+				<div>
+					errorFlag & siritoriError: {errorFlag & siritoriError}
+				</div>
+				<div>
+					Boolean(errorFlag & siritoriError):{" "}
+					{Boolean(errorFlag & siritoriError) ? "true" : "false"}
+				</div>
+			</div>
 		</>
 	);
 }
 
 // 単語の更新
 function NewText({
-	setIsStart,
-	setSiritoriError,
-	setNError,
-	setAlreadyError,
+	errorFlag,
+	setErrorFlag,
 	lastText,
 	setLastText,
 	vocabBook,
 	setVocabBook,
 }: {
-	setIsStart: (isStart: boolean) => void;
-	setSiritoriError: (siritoriError: boolean) => void;
-	setNError: (nError: boolean) => void;
-	setAlreadyError: (nError: boolean) => void;
+	errorFlag: number;
+	setErrorFlag: (errorFlag: number) => void;
 	lastText: string;
 	setLastText: (lastText: string) => void;
 	vocabBook: string[];
@@ -172,33 +180,39 @@ function NewText({
 
 	// ボタン押下でStateをコンソールに出力
 	const submit = () => {
-		// 前回の単語の末尾と入力した単語の先頭が一致したら単語を更新
-		if (lastText.slice(-1) === newText.slice(0, 1)) {
-			// 前回の入力をStateにセット
-			setLastText(newText);
-			setSiritoriError(false); // 一致したらエラーを削除
+		setNewText(""); // 入力後、テキストボックスを空にする
 
-			// 入力した単語の末尾が'ん'のときエラーを出す
-			if (newText.slice(-1) === "ん") {
-				setIsStart(false);
-				setNError(true);
+		// 過去に使用した単語が入力された
+		for (const vocabBooks of vocabBook) {
+			if (vocabBooks === newText) {
+				setErrorFlag(alreadyError);
+				return;
 			}
+		}
 
-			console.debug(`update1: ${vocabBook}`);
-			console.debug(`update2: ${newText}`);
-			// 過去に使用した単語が入力されたら、ゲームを終了
-			for (const vocabBooks of vocabBook) {
-				if (vocabBooks === newText) {
-					setIsStart(false);
-					setAlreadyError(true);
-					console.debug("update3: true");
-					break;
-				}
-			}
+		// 入力した単語の末尾が'ん'
+		if (newText.slice(-1) === "ん") {
+			setErrorFlag(nError);
+		}
 
-			// 入力した単語を記録
-			setVocabBook([...vocabBook, newText]);
-		} else setSiritoriError(true); // 一致しなかった場合はエラーをtrueにする
+		// 入力した単語が一文字
+		else if (newText.length === 1) {
+			setErrorFlag(isStart | oneError);
+		}
+
+		// ひらがな以外が入力された
+		else if (!/^[ぁ-ん]+$/.test(newText)) {
+			setErrorFlag(isStart | hiraganaError);
+		}
+
+		// 前回の単語の末尾と入力した単語の先頭が一致しない
+		else if (lastText.slice(-1) !== newText.slice(0, 1)) {
+			setErrorFlag(isStart | siritoriError);
+		} else {
+			setErrorFlag(isStart);
+			setLastText(newText); // 単語を更新
+			setVocabBook([...vocabBook, newText]); // 入力した単語を記録
+		}
 		setNewText(""); // 入力後、テキストボックスを空にする
 	};
 	// Enterキー押下でStateをコンソールに出力

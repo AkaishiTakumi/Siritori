@@ -1,55 +1,5 @@
 import "./App.css";
-import { AddNode } from "./AVLtree";
-import { StringToCharCode } from "./charCode";
 import { useState } from "react";
-
-// 二分探査木のノードを表す構造体
-class NodeT {
-	number: number[];
-	name: string;
-	left: NodeT | undefined;
-	right: NodeT | undefined;
-
-	constructor(number: number[], name: string) {
-		this.number = number;
-		this.name = name;
-		this.left = undefined;
-		this.right = undefined;
-	}
-}
-
-// AddNodeの簡略
-function AddNodeString({
-	root,
-	name,
-	setRoot,
-}: {
-	root: NodeT | undefined;
-	name: string;
-	setRoot: (root: NodeT | undefined) => void;
-}) {
-	setRoot(AddNode(root, StringToCharCode(name), name));
-}
-
-// rootを根ノードとする二分探索木をの全ノードを表示する
-function PrintTree(root: NodeT | undefined, depth: number) {
-	if (root === undefined) return;
-
-	// 右の子孫ノードを表示
-	PrintTree(root.right, depth + 1);
-
-	let printStr: string = "";
-	//深さをスペースで表現
-	for (let i = 0; i < depth; i++) printStr += " ";
-
-	// ノードのデータを表示
-	console.log(`${printStr}+${root.number}(${root.name})`);
-
-	// 左の子孫ノードを表示
-	PrintTree(root.left, depth + 1);
-
-	depth++;
-}
 
 function App() {
 	// スタートボタンの状態
@@ -58,14 +8,14 @@ function App() {
 	// 入力した単語の末尾が'ん'のとき、true
 	const [nError, setNError] = useState(false);
 
+	// 過去に使用した単語が入力されたら、ゲームを終了
+	const [alreadyError, setAlreadyError] = useState(false);
+
 	// しりとりの直前の単語
 	const [lastText, setLastText] = useState("しりとり");
 
-	console.log(`NewNode(${lastText})`);
-	const [vocabBook, setVocabBook] = useState(
-		new NodeT(StringToCharCode(lastText), lastText)
-	);
-	PrintTree(vocabBook, 0);
+	// 過去に使用した単語を記録
+	const [vocabBook, setVocabBook] = useState([""]);
 
 	return (
 		<>
@@ -74,6 +24,7 @@ function App() {
 				setIsStart={setIsStart}
 				setLastText={setLastText}
 				setNError={setNError}
+				setAlreadyError={setAlreadyError}
 				vocabBook={vocabBook}
 				setVocabBook={setVocabBook}
 			/>
@@ -82,6 +33,8 @@ function App() {
 				setIsStart={setIsStart}
 				nError={nError}
 				setNError={setNError}
+				alreadyError={alreadyError}
+				setAlreadyError={setAlreadyError}
 				lastText={lastText}
 				setLastText={setLastText}
 				vocabBook={vocabBook}
@@ -96,6 +49,7 @@ function StartResetButton({
 	isStart,
 	setIsStart,
 	setNError,
+	setAlreadyError,
 	setLastText,
 	vocabBook,
 	setVocabBook,
@@ -103,20 +57,19 @@ function StartResetButton({
 	isStart: boolean;
 	setIsStart: (isStart: boolean) => void;
 	setNError: (nError: boolean) => void;
+	setAlreadyError: (nError: boolean) => void;
 	setLastText: (lastText: string) => void;
-	vocabBook: NodeT;
-	setVocabBook: (vocabBook: NodeT) => void;
+	vocabBook: string[];
+	setVocabBook: (vocabBook: string[]) => void;
 }) {
 	// スタートボタンをクリックしたとき、isStartをtrueにする
 	const startClick = () => {
 		setIsStart(true);
 		setNError(false);
+		setAlreadyError(false);
 		setLastText("しりとり"); // スタート時に初期単語をセット
-		/** debug￥￥￥ */
-		const Vtmp = "";
-		AddNode(vocabBook, StringToCharCode(Vtmp), Vtmp);
-
-		/** debug^^^^^ */
+		setVocabBook(["しりとり"]);
+		console.debug(`start: ${vocabBook}`);
 	};
 
 	return (
@@ -132,6 +85,8 @@ function TextUpdate({
 	setIsStart,
 	nError,
 	setNError,
+	alreadyError,
+	setAlreadyError,
 	lastText,
 	setLastText,
 	vocabBook,
@@ -141,26 +96,29 @@ function TextUpdate({
 	setIsStart: (isStart: boolean) => void;
 	nError: boolean;
 	setNError: (nError: boolean) => void;
+	alreadyError: boolean;
+	setAlreadyError: (nError: boolean) => void;
 	lastText: string;
 	setLastText: (lastText: string) => void;
-	vocabBook: NodeT;
-	setVocabBook: (vocabBook: NodeT) => void;
+	vocabBook: string[];
+	setVocabBook: (vocabBook: string[]) => void;
 }) {
 	// 前回の単語の末尾と入力した単語の先頭が一致しないとき、true 一致するとき、false
 	const [siritoriError, setSiritoriError] = useState(false);
 
 	return (
 		<>
-			{(isStart || nError) && (
+			{(isStart || nError || alreadyError) && (
 				<div className="last-text">ひとつ前の単語は{lastText}です</div>
 			)}
 			{isStart && (
 				<NewText
 					setIsStart={setIsStart}
-					lastText={lastText}
-					setLastText={setLastText}
 					setSiritoriError={setSiritoriError}
 					setNError={setNError}
+					setAlreadyError={setAlreadyError}
+					lastText={lastText}
+					setLastText={setLastText}
 					vocabBook={vocabBook}
 					setVocabBook={setVocabBook}
 				/>
@@ -175,6 +133,11 @@ function TextUpdate({
 					入力した単語の末尾が'ん'でした ゲームを終了します
 				</div>
 			)}
+			{alreadyError && (
+				<div className="n-error">
+					過去に使用した単語が入力されました ゲームを終了します
+				</div>
+			)}
 		</>
 	);
 }
@@ -184,6 +147,7 @@ function NewText({
 	setIsStart,
 	setSiritoriError,
 	setNError,
+	setAlreadyError,
 	lastText,
 	setLastText,
 	vocabBook,
@@ -192,10 +156,11 @@ function NewText({
 	setIsStart: (isStart: boolean) => void;
 	setSiritoriError: (siritoriError: boolean) => void;
 	setNError: (nError: boolean) => void;
+	setAlreadyError: (nError: boolean) => void;
 	lastText: string;
 	setLastText: (lastText: string) => void;
-	vocabBook: NodeT;
-	setVocabBook: (vocabBook: NodeT) => void;
+	vocabBook: string[];
+	setVocabBook: (vocabBook: string[]) => void;
 }) {
 	// 入力した単語
 	const [newText, setNewText] = useState("");
@@ -219,12 +184,20 @@ function NewText({
 				setNError(true);
 			}
 
+			console.debug(`update1: ${vocabBook}`);
+			console.debug(`update2: ${newText}`);
+			// 過去に使用した単語が入力されたら、ゲームを終了
+			for (const vocabBooks of vocabBook) {
+				if (vocabBooks === newText) {
+					setIsStart(false);
+					setAlreadyError(true);
+					console.debug("update3: true");
+					break;
+				}
+			}
+
 			// 入力した単語を記録
-			console.debug("vocabBook.dir");
-			console.dir(vocabBook);
-			console.log(`AddNode(${newText})`);
-			AddNode(vocabBook, StringToCharCode(newText), newText);
-			PrintTree(vocabBook, 0);
+			setVocabBook([...vocabBook, newText]);
 		} else setSiritoriError(true); // 一致しなかった場合はエラーをtrueにする
 		setNewText(""); // 入力後、テキストボックスを空にする
 	};

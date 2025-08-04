@@ -1,6 +1,55 @@
 import "./App.css";
-import "./AVLtree.ts";
+import { AddNode } from "./AVLtree";
+import { StringToCharCode } from "./charCode";
 import { useState } from "react";
+
+// 二分探査木のノードを表す構造体
+class NodeT {
+	number: number[];
+	name: string;
+	left: NodeT | undefined;
+	right: NodeT | undefined;
+
+	constructor(number: number[], name: string) {
+		this.number = number;
+		this.name = name;
+		this.left = undefined;
+		this.right = undefined;
+	}
+}
+
+// AddNodeの簡略
+function AddNodeString({
+	root,
+	name,
+	setRoot,
+}: {
+	root: NodeT | undefined;
+	name: string;
+	setRoot: (root: NodeT | undefined) => void;
+}) {
+	setRoot(AddNode(root, StringToCharCode(name), name));
+}
+
+// rootを根ノードとする二分探索木をの全ノードを表示する
+function PrintTree(root: NodeT | undefined, depth: number) {
+	if (root === undefined) return;
+
+	// 右の子孫ノードを表示
+	PrintTree(root.right, depth + 1);
+
+	let printStr: string = "";
+	//深さをスペースで表現
+	for (let i = 0; i < depth; i++) printStr += " ";
+
+	// ノードのデータを表示
+	console.log(`${printStr}+${root.number}(${root.name})`);
+
+	// 左の子孫ノードを表示
+	PrintTree(root.left, depth + 1);
+
+	depth++;
+}
 
 function App() {
 	// スタートボタンの状態
@@ -12,6 +61,12 @@ function App() {
 	// しりとりの直前の単語
 	const [lastText, setLastText] = useState("しりとり");
 
+	console.log(`NewNode(${lastText})`);
+	const [vocabBook, setVocabBook] = useState(
+		new NodeT(StringToCharCode(lastText), lastText)
+	);
+	PrintTree(vocabBook, 0);
+
 	return (
 		<>
 			<StartResetButton
@@ -19,6 +74,8 @@ function App() {
 				setIsStart={setIsStart}
 				setLastText={setLastText}
 				setNError={setNError}
+				vocabBook={vocabBook}
+				setVocabBook={setVocabBook}
 			/>
 			<TextUpdate
 				isStart={isStart}
@@ -27,6 +84,8 @@ function App() {
 				setNError={setNError}
 				lastText={lastText}
 				setLastText={setLastText}
+				vocabBook={vocabBook}
+				setVocabBook={setVocabBook}
 			/>
 		</>
 	);
@@ -38,17 +97,26 @@ function StartResetButton({
 	setIsStart,
 	setNError,
 	setLastText,
+	vocabBook,
+	setVocabBook,
 }: {
 	isStart: boolean;
 	setIsStart: (isStart: boolean) => void;
 	setNError: (nError: boolean) => void;
 	setLastText: (lastText: string) => void;
+	vocabBook: NodeT;
+	setVocabBook: (vocabBook: NodeT) => void;
 }) {
 	// スタートボタンをクリックしたとき、isStartをtrueにする
 	const startClick = () => {
 		setIsStart(true);
 		setNError(false);
 		setLastText("しりとり"); // スタート時に初期単語をセット
+		/** debug￥￥￥ */
+		const Vtmp = "";
+		AddNode(vocabBook, StringToCharCode(Vtmp), Vtmp);
+
+		/** debug^^^^^ */
 	};
 
 	return (
@@ -66,6 +134,8 @@ function TextUpdate({
 	setNError,
 	lastText,
 	setLastText,
+	vocabBook,
+	setVocabBook,
 }: {
 	isStart: boolean;
 	setIsStart: (isStart: boolean) => void;
@@ -73,6 +143,8 @@ function TextUpdate({
 	setNError: (nError: boolean) => void;
 	lastText: string;
 	setLastText: (lastText: string) => void;
+	vocabBook: NodeT;
+	setVocabBook: (vocabBook: NodeT) => void;
 }) {
 	// 前回の単語の末尾と入力した単語の先頭が一致しないとき、true 一致するとき、false
 	const [siritoriError, setSiritoriError] = useState(false);
@@ -89,6 +161,8 @@ function TextUpdate({
 					setLastText={setLastText}
 					setSiritoriError={setSiritoriError}
 					setNError={setNError}
+					vocabBook={vocabBook}
+					setVocabBook={setVocabBook}
 				/>
 			)}
 			{siritoriError && (
@@ -108,16 +182,20 @@ function TextUpdate({
 // 単語の更新
 function NewText({
 	setIsStart,
-	lastText,
-	setLastText,
 	setSiritoriError,
 	setNError,
+	lastText,
+	setLastText,
+	vocabBook,
+	setVocabBook,
 }: {
 	setIsStart: (isStart: boolean) => void;
-	lastText: string;
-	setLastText: (lastText: string) => void;
 	setSiritoriError: (siritoriError: boolean) => void;
 	setNError: (nError: boolean) => void;
+	lastText: string;
+	setLastText: (lastText: string) => void;
+	vocabBook: NodeT;
+	setVocabBook: (vocabBook: NodeT) => void;
 }) {
 	// 入力した単語
 	const [newText, setNewText] = useState("");
@@ -140,6 +218,13 @@ function NewText({
 				setIsStart(false);
 				setNError(true);
 			}
+
+			// 入力した単語を記録
+			console.debug("vocabBook.dir");
+			console.dir(vocabBook);
+			console.log(`AddNode(${newText})`);
+			AddNode(vocabBook, StringToCharCode(newText), newText);
+			PrintTree(vocabBook, 0);
 		} else setSiritoriError(true); // 一致しなかった場合はエラーをtrueにする
 		setNewText(""); // 入力後、テキストボックスを空にする
 	};

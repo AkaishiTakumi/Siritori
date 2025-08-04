@@ -1,14 +1,19 @@
+import { CompareCharCode } from "./charCode";
+
 const TREE_LEFT: number = 1;
 const TREE_RIGHT: number = 2;
 
+const LEFT_IS_BIG: number = 1;
+const RIGHT_IS_BIG: number = -1;
+
 // 二分探査木のノードを表す構造体
 class NodeT {
-	number: number;
+	number: number[];
 	name: string;
 	left: NodeT | undefined;
 	right: NodeT | undefined;
 
-	constructor(number: number, name: string) {
+	constructor(number: number[], name: string) {
 		this.number = number;
 		this.name = name;
 		this.left = undefined;
@@ -18,7 +23,12 @@ class NodeT {
 
 // nodeを根とした木の高さを計算
 function GetHeight(node: NodeT | undefined): number {
-	if (node === undefined) return 0;
+	if (node == undefined) return 0;
+	console.debug("GetHeight:");
+	console.debug("node.left.dir");
+	console.dir(node.left);
+	console.debug("node.right.dir");
+	console.dir(node.right);
 	return Math.max(GetHeight(node.left), GetHeight(node.right)) + 1;
 }
 
@@ -34,7 +44,7 @@ function LeftRotate(
 
 	let newRoot: NodeT | undefined;
 
-	console.log(`LeftRotate:${node.number}`);
+	console.debug(`LeftRotate:${node.number}`);
 
 	// 左回転
 	if (pivot !== undefined) {
@@ -66,7 +76,7 @@ function RightRotate(
 
 	let newRoot: NodeT | undefined;
 
-	console.log(`RightRotate:${node.number}`);
+	console.debug(`RightRotate:${node.number}`);
 
 	// 左回転
 	if (pivot !== undefined) {
@@ -95,13 +105,14 @@ function RightLeftRotate(
 ) {
 	let newRoot: NodeT | undefined;
 
-	console.log(`RightLeftRotate:${node.number}`);
+	console.debug(`RightLeftRotate:${node.number}`);
 
 	if (node.right === undefined) {
 		throw new Error("Error: RightLeftRotate: node.right === undefined");
 	}
 
 	// nodeの右の子ノードを根として右回転
+	console.debug("RightRotate");
 	newRoot = RightRotate(root, node.right, node, TREE_RIGHT);
 
 	if (newRoot === undefined) {
@@ -109,6 +120,7 @@ function RightLeftRotate(
 	}
 
 	// nodeを根として左回転
+	console.debug("RightRotate");
 	return LeftRotate(newRoot, node, parent, direction);
 }
 
@@ -121,20 +133,22 @@ function LeftRightRotate(
 ) {
 	let newRoot: NodeT | undefined;
 
-	console.log(`LeftRightRotate:${node.number}`);
+	console.debug(`LeftRightRotate:${node.number}`);
 
 	if (node.left === undefined) {
 		throw new Error("Error: LeftRightRotate: node.left === undefined");
 	}
 
 	// nodeの左の子ノードを根として左回転
-	newRoot = RightRotate(root, node.left, node, TREE_LEFT);
+	console.debug("LeftRotate");
+	newRoot = LeftRotate(root, node.left, node, TREE_LEFT);
 
 	if (newRoot === undefined) {
 		throw new Error("Error: LeftRightRotate: newRoot === undefined");
 	}
 
 	// nodeを根として右回転
+	console.debug("RightRotate");
 	return RightRotate(newRoot, node, parent, direction);
 }
 
@@ -163,6 +177,19 @@ function Balancing(
 		else next = node.right;
 
 		/* 子ノードを辿る */
+		console.debug("Balancing");
+		console.debug("root");
+		console.dir(root);
+		console.debug("next");
+		console.dir(next);
+		console.debug("node");
+		console.dir(node);
+		console.debug("branch[0]");
+		console.debug(branch[0]);
+		console.debug("branch.slice(1)");
+		console.dir(branch.slice(1));
+		console.debug("numBranch - 1");
+		console.debug(numBranch - 1);
 		newRoot = Balancing(
 			root,
 			next,
@@ -173,7 +200,9 @@ function Balancing(
 		);
 
 		// 平衡係数を計算
+		console.debug("GetHeight");
 		leftHeight = GetHeight(node.left);
+		console.debug("GetHeight");
 		rightHeight = GetHeight(node.right);
 		balance = rightHeight - leftHeight;
 
@@ -188,11 +217,16 @@ function Balancing(
 			}
 
 			// 2重回転が必要かどうかを判断
-			if (GetHeight(node.right.left) > GetHeight(node.right.right))
+			console.debug("GetHeight");
+			if (GetHeight(node.right.left) > GetHeight(node.right.right)) {
 				// 2重回転（Right Left Case）
+				console.debug("RightLeftRotate");
 				return RightLeftRotate(newRoot, node, parent, direction);
-			// 1重回転（左回転）
-			else return LeftRotate(newRoot, node, parent, direction);
+			} else {
+				// 1重回転（右回転）
+				console.debug("LeftRotate");
+				return LeftRotate(newRoot, node, parent, direction);
+			}
 		}
 		// 左の部分木が高くて平衡状態でない場合
 		else if (balance < -1) {
@@ -205,11 +239,16 @@ function Balancing(
 			}
 
 			// 2重回転が必要かどうかを判断
-			if (GetHeight(node.left.left) > GetHeight(node.left.right))
+			console.debug("GetHeight");
+			if (GetHeight(node.left.left) > GetHeight(node.left.right)) {
 				// 2重回転（Left Right Case）
+				console.debug("LeftRightRotate");
 				return LeftRightRotate(newRoot, node, parent, direction);
-			// 1重回転（右回転）
-			else return RightRotate(newRoot, node, parent, direction);
+			} else {
+				// 1重回転（右回転）
+				console.debug("RightRotate");
+				return RightRotate(newRoot, node, parent, direction);
+			}
 		}
 	}
 	return root;
@@ -227,12 +266,17 @@ function DeleteTree(root: NodeT | undefined) {
 		DeleteTree(root.right);
 	}
 
-	console.log(`free:${root.number}(${root.name})`);
+	console.debug(`free:${root.number}(${root.name})`);
 	root = undefined;
 }
 
 // 指定されたnumberとname持つノードを追加する
-function AddNode(root: NodeT | undefined, number: number, name: string) {
+export function AddNode(
+	root: NodeT | undefined,
+	number: number[],
+	name: string
+) {
+	console.debug("AddNode");
 	let node: NodeT;
 	const branch: number[] = [0];
 	let numBranch: number = 0;
@@ -251,10 +295,16 @@ function AddNode(root: NodeT | undefined, number: number, name: string) {
 
 	// 根ノードから順に追加する場所を探索
 	node = root;
+	console.debug("node.dir");
+	console.dir(node);
 	while (1) {
 		// 追加する値がノードの値よりも小さい場合
-		if (number < node.number) {
+		console.debug("CompareCharCode");
+		if (CompareCharCode(number, node.number) === RIGHT_IS_BIG) {
+			console.debug("CompareCharCode:if");
 			// そのノードの左の子が無い場合（もう辿るべきノードが無い場合）
+			console.debug("node.dir");
+			console.dir(node);
 			if (node.left === undefined) {
 				// その左の子の位置にノードを追加
 				node.left = new NodeT(number, name);
@@ -269,7 +319,8 @@ function AddNode(root: NodeT | undefined, number: number, name: string) {
 			node = node.left;
 		}
 		// 追加する値がノードの値よりも大きい場合
-		else if (number > node.number) {
+		else if (CompareCharCode(number, node.number) === LEFT_IS_BIG) {
+			console.debug("CompareCharCode:elseif");
 			// そのノードの右の子が無い場合（もう辿るべきノードが無い場合）
 			if (node.right === undefined) {
 				// その右の子の位置にノードを追加
@@ -286,25 +337,33 @@ function AddNode(root: NodeT | undefined, number: number, name: string) {
 		}
 		// 追加する値とノードの値が同じ場合
 		else {
+			console.debug("CompareCharCode:else");
 			console.error(`${number} already exist`);
 			break;
 		}
 	}
+	console.debug("Balancing");
+	console.debug("root");
+	console.dir(root);
+	console.debug("branch");
+	console.dir(branch);
+	console.debug("numBranch");
+	console.debug(numBranch);
 	return Balancing(root, root, undefined, 0, branch, numBranch);
 }
 
 // 指定されたnumberを持つノードを探索する
-function SearchNode(root: NodeT | undefined, number: number) {
+function SearchNode(root: NodeT | undefined, number: number[]) {
 	let node: NodeT | undefined = root;
 
 	// 探索を行うループ（注目ノードがNULLになったら終了）
 	while (node) {
 		// 探索値がノードの値よりも小さい場合
-		if (number < node.number)
+		if (CompareCharCode(number, node.number) === RIGHT_IS_BIG)
 			// 注目ノードを左の子ノードに設定
 			node = node.left;
 		// 探索値がノードの値よりも大きい場合
-		else if (number > node.number)
+		else if (CompareCharCode(number, node.number) === LEFT_IS_BIG)
 			// 注目ノードを右の子ノードに設定
 			node = node.right;
 		// 探索値 = ノードの値の場合
@@ -379,7 +438,7 @@ function DeleteTwoChildNode(
 		// 右の子ノードを辿ったことを覚えておく
 		branch[numBranch++] = TREE_RIGHT;
 	}
-	console.log(`max number is ${max.number}`);
+	console.debug(`max number is ${max.number}`);
 
 	// 最大ノードのデータのみ削除対象ノードにコピー
 	node.number = max.number;
@@ -397,7 +456,7 @@ function DeleteTwoChildNode(
 }
 
 // 指定されたnumberを持つノードを削除する
-function DeleteNode(root: NodeT | undefined, number: number) {
+function DeleteNode(root: NodeT | undefined, number: number[]) {
 	if (root === undefined) return undefined;
 
 	// 削除対象ノードを指すノードを探索
@@ -408,13 +467,13 @@ function DeleteNode(root: NodeT | undefined, number: number) {
 	let numBranch: number = 0;
 
 	while (node !== undefined) {
-		if (number < node.number) {
+		if (CompareCharCode(number, node.number) === RIGHT_IS_BIG) {
 			parent = node;
 			node = node.left;
 
 			// 左の子ノードを辿ったことを覚えておく
 			branch[numBranch++] = TREE_LEFT;
-		} else if (number > node.number) {
+		} else if (CompareCharCode(number, node.number) === LEFT_IS_BIG) {
 			parent = node;
 			node = node.right;
 
@@ -429,7 +488,7 @@ function DeleteNode(root: NodeT | undefined, number: number) {
 		return root;
 	}
 
-	console.log(`Delete ${node.number}(${node.name})`);
+	console.debug(`Delete ${node.number}(${node.name})`);
 
 	// 子がいないノードの削除
 	if (node.left === undefined && node.right === undefined)
@@ -439,29 +498,12 @@ function DeleteNode(root: NodeT | undefined, number: number) {
 		(node.left !== undefined && node.right === undefined) ||
 		(node.right !== undefined && node.left === undefined)
 	) {
-		if(node.left!==undefined)root=DeleteOneChildNode(root,node,node.left);
-		else root=DeleteOneChildNode(root,node,node.right);
+		if (node.left !== undefined)
+			root = DeleteOneChildNode(root, node, node.left);
+		else root = DeleteOneChildNode(root, node, node.right);
 	}
 	// 左の子と右の子両方がいるノードの削除
-	else root=DeleteTwoChildNode(root,node,branch,numBranch);
+	else root = DeleteTwoChildNode(root, node, branch, numBranch);
 
-	return Balancing(root,root,undefined,0,branch,numBranch);
-}
-
-// rootを根ノードとする二分探索木をの全ノードを表示する
-function PrintTree(root:NodeT|undefined,depth:number){
-	if(root===undefined)return;
-
-	// 右の子孫ノードを表示
-	PrintTree(root.right,depth+1);
-
-	for(let i=0;i<depth;i++)console.log(" ");
-
-	// ノードのデータを表示
-	console.log(`+${String(root.number).padStart(3, '0')}(${root.name})`);
-
-	// 左の子孫ノードを表示
-	PrintTree(root.left,depth+1);
-
-	depth++;
+	return Balancing(root, root, undefined, 0, branch, numBranch);
 }

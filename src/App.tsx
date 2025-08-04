@@ -106,6 +106,9 @@ function TextUpdate({
 	// 前回の単語の末尾と入力した単語の先頭が一致しないとき、true 一致するとき、false
 	const [siritoriError, setSiritoriError] = useState(false);
 
+	// ひらがなの入力のみ受け付ける
+	const [hiraganaError,setHiraganaError]=useState(false);
+
 	return (
 		<>
 			{(isStart || nError || alreadyError) && (
@@ -117,6 +120,7 @@ function TextUpdate({
 					setSiritoriError={setSiritoriError}
 					setNError={setNError}
 					setAlreadyError={setAlreadyError}
+					setHiraganaError={setHiraganaError}
 					lastText={lastText}
 					setLastText={setLastText}
 					vocabBook={vocabBook}
@@ -126,6 +130,11 @@ function TextUpdate({
 			{siritoriError && (
 				<div className="siritori-error">
 					ひとつ前の単語の末尾と入力した単語の先頭が一致しません
+				</div>
+			)}
+			{hiraganaError && (
+				<div className="n-error">
+					ひらがな以外が入力されました
 				</div>
 			)}
 			{nError && (
@@ -148,6 +157,7 @@ function NewText({
 	setSiritoriError,
 	setNError,
 	setAlreadyError,
+	setHiraganaError,
 	lastText,
 	setLastText,
 	vocabBook,
@@ -157,6 +167,7 @@ function NewText({
 	setSiritoriError: (siritoriError: boolean) => void;
 	setNError: (nError: boolean) => void;
 	setAlreadyError: (nError: boolean) => void;
+	setHiraganaError: (nError: boolean) => void;
 	lastText: string;
 	setLastText: (lastText: string) => void;
 	vocabBook: string[];
@@ -172,11 +183,16 @@ function NewText({
 
 	// ボタン押下でStateをコンソールに出力
 	const submit = () => {
+		const regex = /^[ぁ-ん]+$/;
+		if(!regex.test(newText)){
+			setSiritoriError(false); // 一致したらエラーを削除
+			setHiraganaError(true); // ひらがなのみが入力されたらエラーを削除
+		}
 		// 前回の単語の末尾と入力した単語の先頭が一致したら単語を更新
-		if (lastText.slice(-1) === newText.slice(0, 1)) {
+		else if (lastText.slice(-1) === newText.slice(0, 1)) {
 			// 前回の入力をStateにセット
 			setLastText(newText);
-			setSiritoriError(false); // 一致したらエラーを削除
+			setHiraganaError(false); // ひらがなのみが入力されたらエラーを削除
 
 			// 入力した単語の末尾が'ん'のときエラーを出す
 			if (newText.slice(-1) === "ん") {
@@ -198,7 +214,10 @@ function NewText({
 
 			// 入力した単語を記録
 			setVocabBook([...vocabBook, newText]);
-		} else setSiritoriError(true); // 一致しなかった場合はエラーをtrueにする
+		} else {
+			setSiritoriError(true); // 一致しなかった場合はエラーをtrueにする
+			setHiraganaError(false); // ひらがなのみが入力されたらエラーを削除
+		}
 		setNewText(""); // 入力後、テキストボックスを空にする
 	};
 	// Enterキー押下でStateをコンソールに出力

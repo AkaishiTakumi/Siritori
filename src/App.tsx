@@ -202,9 +202,9 @@ function NewText({
 	};
 
 	return (
-		<>
+		<span className="new-text">
 			<input
-				className="new-text"
+				className="new-text-box"
 				type="text"
 				value={newText}
 				onChange={handleTextBox}
@@ -213,9 +213,10 @@ function NewText({
 			<button className="new-text-button" onClick={submit}>
 				決定
 			</button>
-		</>
+		</span>
 	);
 }
+
 function HorizontalScroll({ vocabBook }: { vocabBook: string[] }) {
 	const containerRef = useRef<HTMLDivElement>(null);
 
@@ -226,20 +227,28 @@ function HorizontalScroll({ vocabBook }: { vocabBook: string[] }) {
 	};
 
 	return (
-		<div className="handle-wheel" ref={containerRef} onWheel={handleWheel}>
-			{/* 横に長いコンテンツ */}
-			<div className="handle-wheel-contents">
-				{vocabBook.map((word, index) => (
-					<span
-						key={index}
-						className="handle-wheel-contents-word"
-					>
-						{word}
-					</span>
-				))}
+		<>
+			<div className="used-words">過去に使用した単語</div>
+			<div
+				className="handle-wheel"
+				ref={containerRef}
+				onWheel={handleWheel}
+			>
+				{/* 横に長いコンテンツ */}
+				<div className="handle-wheel-contents">
+					{vocabBook.map((word, index) => (
+						<span
+							className="handle-wheel-contents-word"
+							key={index}
+						>
+							{word}
+						</span>
+					))}
+				</div>
 			</div>
-		</div>
+		</>
 	);
 }
+
 
 export default App;

@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 let flagI = 1;
 const isStart: number = flagI;
@@ -26,14 +26,22 @@ function App() {
 	const [vocabBook, setVocabBook] = useState([""]);
 
 	return (
-		<>
+		<div className="main">
 			<StartResetButton
 				errorFlag={errorFlag}
 				setErrorFlag={setErrorFlag}
 				setLastText={setLastText}
-				vocabBook={vocabBook}
 				setVocabBook={setVocabBook}
 			/>
+			{/* 一度もスタートを押していなければ、errorFlagは0 */}
+			{Boolean(errorFlag) && (
+				<>
+					<HorizontalScroll vocabBook={vocabBook} />
+					<div className="last-text">
+						ひとつ前の単語は{lastText}です
+					</div>
+				</>
+			)}
 			<TextUpdate
 				errorFlag={errorFlag}
 				setErrorFlag={setErrorFlag}
@@ -42,7 +50,32 @@ function App() {
 				vocabBook={vocabBook}
 				setVocabBook={setVocabBook}
 			/>
-		</>
+			{Boolean(errorFlag & siritoriError) && (
+				<div className="siritori-error">
+					ひとつ前の単語の末尾と入力した単語の先頭が一致しません
+				</div>
+			)}
+			{Boolean(errorFlag & hiraganaError) && (
+				<div className="hiragana-error">
+					ひらがな以外が入力されました
+				</div>
+			)}
+			{Boolean(errorFlag & oneError) && (
+				<div className="one-error">
+					入力が一文字だけでした 文字数を増やしてください
+				</div>
+			)}
+			{Boolean(errorFlag & nError) && (
+				<div className="n-error">
+					入力した単語の末尾が'ん'でした ゲームを終了します
+				</div>
+			)}
+			{Boolean(errorFlag & alreadyError) && (
+				<div className="already-error">
+					過去に使用した単語が入力されました ゲームを終了します
+				</div>
+			)}
+		</div>
 	);
 }
 
@@ -51,13 +84,11 @@ function StartResetButton({
 	errorFlag,
 	setErrorFlag,
 	setLastText,
-	vocabBook,
 	setVocabBook,
 }: {
 	errorFlag: number;
 	setErrorFlag: (errorFlag: number) => void;
 	setLastText: (lastText: string) => void;
-	vocabBook: string[];
 	setVocabBook: (vocabBook: string[]) => void;
 }) {
 	// スタートボタンをクリックしたとき、フラグをisStartにする
@@ -92,13 +123,8 @@ function TextUpdate({
 }) {
 	return (
 		<>
-			{/* 一度もスタートを押していなければ、errorFlagは0 */}
-			{Boolean(errorFlag) && (
-				<div className="last-text">ひとつ前の単語は{lastText}です</div>
-			)}
 			{Boolean(errorFlag & isStart) && (
 				<NewText
-					errorFlag={errorFlag}
 					setErrorFlag={setErrorFlag}
 					lastText={lastText}
 					setLastText={setLastText}
@@ -106,64 +132,18 @@ function TextUpdate({
 					setVocabBook={setVocabBook}
 				/>
 			)}
-			{Boolean(errorFlag & siritoriError) && (
-				<div className="siritori-error">
-					ひとつ前の単語の末尾と入力した単語の先頭が一致しません
-				</div>
-			)}
-			{Boolean(errorFlag & hiraganaError) && (
-				<div className="hiragana-error">
-					ひらがな以外が入力されました
-				</div>
-			)}
-			{Boolean(errorFlag & oneError) && (
-				<div className="one-error">
-					入力が一文字だけでした 文字数を増やしてください
-				</div>
-			)}
-			{Boolean(errorFlag & nError) && (
-				<div className="n-error">
-					入力した単語の末尾が'ん'でした ゲームを終了します
-				</div>
-			)}
-			{Boolean(errorFlag & alreadyError) && (
-				<div className="already-error">
-					過去に使用した単語が入力されました ゲームを終了します
-				</div>
-			)}
-			<div className="debug">
-				<div className="debug-text">Debug</div>
-				<div>errorFlag: {errorFlag}</div>
-				<div>errorFlag.toString(2): {errorFlag.toString(2)}</div>
-				<div>isStart: {isStart}</div>
-				<div>errorFlag & isStart: {errorFlag & isStart}</div>
-				<div>
-					Boolean(errorFlag & isStart):{" "}
-					{Boolean(errorFlag & isStart) ? "true" : "false"}
-				</div>
-				<div>siritoriError: {siritoriError}</div>
-				<div>
-					errorFlag & siritoriError: {errorFlag & siritoriError}
-				</div>
-				<div>
-					Boolean(errorFlag & siritoriError):{" "}
-					{Boolean(errorFlag & siritoriError) ? "true" : "false"}
-				</div>
-			</div>
 		</>
 	);
 }
 
 // 単語の更新
 function NewText({
-	errorFlag,
 	setErrorFlag,
 	lastText,
 	setLastText,
 	vocabBook,
 	setVocabBook,
 }: {
-	errorFlag: number;
 	setErrorFlag: (errorFlag: number) => void;
 	lastText: string;
 	setLastText: (lastText: string) => void;
@@ -201,7 +181,7 @@ function NewText({
 		}
 
 		// ひらがな以外が入力された
-		else if (!/^[ぁ-ん]+$/.test(newText)) {
+		else if (!/^[ぁ-んー]+$/.test(newText)) {
 			setErrorFlag(isStart | hiraganaError);
 		}
 
@@ -222,9 +202,9 @@ function NewText({
 	};
 
 	return (
-		<>
+		<span className="new-text">
 			<input
-				className="new-text"
+				className="new-text-box"
 				type="text"
 				value={newText}
 				onChange={handleTextBox}
@@ -233,8 +213,42 @@ function NewText({
 			<button className="new-text-button" onClick={submit}>
 				決定
 			</button>
+		</span>
+	);
+}
+
+function HorizontalScroll({ vocabBook }: { vocabBook: string[] }) {
+	const containerRef = useRef<HTMLDivElement>(null);
+
+	const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+		if (containerRef.current) {
+			containerRef.current.scrollLeft += e.deltaY;
+		}
+	};
+
+	return (
+		<>
+			<div className="used-words">過去に使用した単語</div>
+			<div
+				className="handle-wheel"
+				ref={containerRef}
+				onWheel={handleWheel}
+			>
+				{/* 横に長いコンテンツ */}
+				<div className="handle-wheel-contents">
+					{vocabBook.map((word, index) => (
+						<span
+							className="handle-wheel-contents-word"
+							key={index}
+						>
+							{word}
+						</span>
+					))}
+				</div>
+			</div>
 		</>
 	);
 }
+
 
 export default App;

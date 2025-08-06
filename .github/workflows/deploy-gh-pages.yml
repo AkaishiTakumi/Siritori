@@ -38,17 +38,32 @@ on:
         default: 1
 
 jobs:
-  test:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment_var }}
     steps:
-      - name: inputs check
-        run: echo "string_var=${{ inputs.string_var }}, choice_var=${{ inputs.choice_var }}, boolean_var=${{ inputs.boolean_var }}, environment_var=${{ inputs.environment_var }}, number_var=${{ inputs.number_var }}, test_type_var=${{ inputs.test_type_var }}"
-      - name: boolean test
-        if: ${{ inputs.boolean_var }}
-        run: echo "boolean_var is true"
-      - name: string test
-        if: ${{ inputs.string_var }}
-        run: echo "string_var is true"
-      - name: environment test
-        run: echo "TEST_VAR=${{ vars.TEST_VAR }}"
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            node-
+
+      - name: Install and Build
+        run: |
+          npm ci
+          npm run build
+          cp CNAME dist/
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist

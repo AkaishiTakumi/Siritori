@@ -29,7 +29,7 @@
 - スマホで開くと全体の文字が大きくなるように設定
 
 ## アプリの動作確認の方法（WebサイトのURLや、セットアップを含めたアプリケーションの実行手順等）
-[akaishitakumi.github.io/Siritori/](akaishitakumi.github.io/Siritori/)
+[akaishitakumi.github.io/Siritori/](akaishitakumi.github.io/Siritori/) を開く
 
 ## 参考にしたWebサイト
 - [viteでReact×TypeScript環境を爆速で作る最小版 #React - Qiita](https://qiita.com/teradonburi/items/fcdd900adb069811bfda)

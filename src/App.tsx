@@ -38,7 +38,8 @@ function App() {
 				<>
 					<HorizontalScroll vocabBook={vocabBook} />
 					<div className="last-text">
-						ひとつ前の単語は{lastText}です
+						ひとつ前の単語は{" "}
+						<span className="last-text-word">{lastText}</span> です
 					</div>
 				</>
 			)}
@@ -249,6 +250,5 @@ function HorizontalScroll({ vocabBook }: { vocabBook: string[] }) {
 		</>
 	);
 }
-
 
 export default App;

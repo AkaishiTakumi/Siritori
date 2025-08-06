@@ -30,7 +30,6 @@ jobs:
         run: |
           npm ci
           npm run build
-          cp CNAME dist/
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3

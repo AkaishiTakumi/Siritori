@@ -1,41 +1,11 @@
-name: test
+name: Build and Deploy
 
 on:
   push:
-    branches-ignore:
-      - "coverage"
-  pull_request:
+    branches:
+      - main
+
   workflow_dispatch:
-    inputs:
-      string_var:
-        type: string
-        description: 'string variable'
-        required: false
-        default: 'default string'
-      choice_var:
-        type: choice
-        description: 'choice variable'
-        required: false
-        default: 'b'
-        options:
-          - 'a'
-          - 'b'
-          - 'c'
-      boolean_var:
-        type: boolean
-        description: 'boolean variable'
-        required: false
-        default: false
-      environment_var:
-        type: environment
-        description: 'enviroment variable'
-        required: false
-        default: prod
-      number_var:
-        type: number
-        description: 'number variable'
-        required: false
-        default: 1
 
 jobs:
   build-and-deploy:
@@ -47,7 +17,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: '22'
 
       - uses: actions/cache@v2
         with:

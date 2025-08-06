@@ -5,12 +5,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "vite --host 0.0.0.0",
-    "build": "vite build"
+    "build": "vite build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
+  "homepage": "https://AkaishiTakumi.github.io/Siritori/",
   "dependencies": {
     "gh-pages": "^6.3.0",
     "react": "^19.1.0",

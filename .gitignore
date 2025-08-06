@@ -29,7 +29,6 @@ Thumbs.db
 .env.*.local
 
 # Optional lock files (if not using them)
-package-lock.json
 yarn.lock
 pnpm-lock.yaml
 forme.md
